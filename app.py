@@ -11,6 +11,8 @@ def main():
 
     palm.configure(api_key=os.getenv("PALM_API_KEY"))
 
+    key = os.getenv("PALM_API_KEY")
+
     # Set up page configuration
     st.set_page_config(
         page_title="Article Mind: Harnessing AI for Rapid Article Insights",
@@ -55,7 +57,8 @@ def main():
                 article_text = extract_text_from_url(article_url)
                 summary = generate_summary(article_text)
                 st.subheader("Generated Summary:")
-                st.write(summary, unsafe_allow_html=True)
+                # st.write(summary, unsafe_allow_html=True)
+                st.write(key, unsafe_allow_html=True)
                 # except:
                 #     st.write(
                 #         "This article is not available to summarize.",
