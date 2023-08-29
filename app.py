@@ -4,6 +4,7 @@ import streamlit as st
 import google.generativeai as palm
 from module import extract_text_from_url, generate_summary, chat_about_article
 from design import apply_design
+from feedback_form import save_feedback
 
 
 def main():
@@ -63,6 +64,21 @@ def main():
                         unsafe_allow_html=True,
                     )
 
+    # Feedback Form
+    st.write("---")
+    st.write("Feedback Form:")
+
+    # Input fields
+    name = st.text_input("Your Name")
+    email = st.text_input("Your Email")
+    feedback = st.text_area("Your Feedback", max_chars=500)
+
+    # Submit button
+    if st.button("Submit"):
+        if name and email and feedback:
+            save_feedback(name, email, feedback)
+            st.success("Thank you for your feedback!")
+    
     # Footer
     st.write("---")
     st.write("Contact Information:")
