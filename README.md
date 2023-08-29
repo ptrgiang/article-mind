@@ -17,7 +17,8 @@ cd article-mind
 ```
 2. **Obtain your API Key:**
 
-Join the PaLM API and MakerSuite waitlist at [https://makersuite.google.com/waitlist](https://makersuite.google.com/waitlist). Upon acceptance, you can create an API key.
+- Join the PaLM API and MakerSuite waitlist at [https://makersuite.google.com/waitlist](https://makersuite.google.com/waitlist).
+- Upon acceptance, you can create an API key.
 
 3. **Configure your API Key:**
 
