@@ -10,7 +10,7 @@ def main():
     load_dotenv()
 
     # palm.configure(api_key=os.getenv("PALM_API_KEY")) # run_locally
-    palm.configure(api_key=st.secrets["PALM_API_KEY"])
+    palm.configure(api_key=st.secrets["PALM_API_KEY"]) # deploy_on_streamlit
 
     # Set up page configuration
     st.set_page_config(
