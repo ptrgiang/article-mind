@@ -52,16 +52,16 @@ def main():
 
         if st.button("Summarize"):
             if article_url:
-                # try:
-                article_text = extract_text_from_url(article_url)
-                summary = generate_summary(article_text)
-                st.subheader("Generated Summary:")
-                st.write(summary, unsafe_allow_html=True)
-                # except:
-                #     st.write(
-                #         "This article is not available to summarize.",
-                #         unsafe_allow_html=True,
-                #     )
+                try:
+                    article_text = extract_text_from_url(article_url)
+                    summary = generate_summary(article_text)
+                    st.subheader("Generated Summary:")
+                    st.write(summary, unsafe_allow_html=True)
+                except:
+                    st.write(
+                        "This article is not available to summarize.",
+                        unsafe_allow_html=True,
+                    )
 
     # Footer
     st.write("---")
