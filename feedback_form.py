@@ -1,5 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2 import service_account
 
 # Set up Google Sheets API
 scope = [
@@ -7,7 +8,7 @@ scope = [
     "https://www.googleapis.com/auth/drive",
 ]
 # creds = ServiceAccountCredentials.from_json_keyfile_name("google_creds.json", scope)
-creds = ServiceAccountCredentials.from_service_account_info(st.secrets["gcp_service_account"], scope)
+creds = service_account.Credentials.from_service_account_info(st.secrets["gcp_service_account"], scope)
 client = gspread.authorize(creds)
 
 
