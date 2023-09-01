@@ -21,7 +21,6 @@ def main():
     )
 
     # Introductory section
-    st.write(" ")
     st.markdown(
         "<h1 style='text-align: center; color: white; font-size:35px;'>Welcome to Article Mind!</h1>",
         unsafe_allow_html=True,
