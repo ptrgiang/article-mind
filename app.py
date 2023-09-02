@@ -25,10 +25,11 @@ def main():
         "<h1 style='text-align: center; color: white; font-size:35px;'>Welcome to Article Mind!</h1>",
         unsafe_allow_html=True,
     )
-    st.markdown(
-        "<h3 style='text-align: center; font-size:56px;'<p>📰</p></h3>",
-        unsafe_allow_html=True,
-    )
+    # st.markdown(
+    #     "<h3 style='text-align: center; font-size:56px;'<p>📰</p></h3>",
+    #     unsafe_allow_html=True,
+    # )
+    st.image("images/article-mind-log.jpeg", use_column_width=True)
     st.markdown(
         "<h3 style='text-align: center; color: grey; font-size:20px;'>Unleash the power of AI for instant article summaries and chat interactions</h3>",
         unsafe_allow_html=True,
