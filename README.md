@@ -17,16 +17,15 @@ cd article-mind
 ```
 2. **Obtain your API Key:**
 
-- Join the PaLM API and MakerSuite waitlist at [https://makersuite.google.com/waitlist](https://makersuite.google.com/waitlist).
-- Upon acceptance, you can create an API key.
+Get Gemini API key at [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 3. **Configure your API Key:**
 
 - Create a `.env` file in the root directory of the project.
-- Add a new variable named PALM_API_KEY in the .env file and assign your received API key to it. Your .env file should look like this:
+- Add a new variable named GEMINI_API_KEY in the .env file and assign your received API key to it. Your .env file should look like this:
 
 ```bash
-PALM_API_KEY=your_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 4. **Run the Application with Streamlit:**
