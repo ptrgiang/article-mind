@@ -17,7 +17,7 @@ cd article-mind
 ```
 2. **Obtain your API Key:**
 
-Get Gemini API key at [Google AI Studio](https://makersuite.google.com/app/apikey).
+- Get Gemini API key at [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 3. **Configure your API Key:**
 
