@@ -23,7 +23,7 @@ Article Mind is a client-side application, meaning all the processing happens in
    ```
    This will start a server on port 8000.
 2. **Open in browser:** Open your web browser and navigate to `http://localhost:8000/`.
-3. **Enter API Key:** Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey) and enter it into the API key field at the top of the page.
+3. **Enter API Key:** Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) and enter it into the API key field at the top of the page.
 4. **Load Article:** Paste the URL of an article and click "Load".
 
 That's it! The application will fetch the article, summarize it, and allow you to chat about it, all within your browser.
