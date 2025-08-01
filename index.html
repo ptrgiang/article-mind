@@ -39,18 +39,18 @@
         <p class="text-gray-500 mt-4">Reading, summarizing, and preparing chat...</p>
     </div>
 
-    <div id="content-wrapper" class="hidden grid grid-cols-1 md:grid-cols-5 gap-8 flex-grow container mx-auto max-w-7xl px-4 py-6">
-        <!-- Left Column: Summary -->
-        <div id="summary-section-wrapper" class="flex flex-col md:col-span-2">
+    <div id="content-wrapper" class="hidden flex-col items-center container mx-auto max-w-3xl px-4 py-6">
+        <!-- Summary Section -->
+        <div id="summary-section-wrapper" class="w-full mb-8">
             <h2 class="text-xl font-semibold text-black mb-3">Summary</h2>
-            <div id="summary-content" class="bg-white border border-gray-200 p-6 rounded-lg text-gray-800 flex-grow overflow-y-auto"></div>
+            <div id="summary-content" class="bg-white border border-gray-200 p-6 rounded-lg text-gray-800 overflow-y-auto"></div>
         </div>
 
-        <!-- Right Column: Chat -->
-        <div id="chat-section-wrapper" class="flex flex-col md:col-span-3">
+        <!-- Chat Section -->
+        <div id="chat-section-wrapper" class="w-full">
             <h2 class="text-xl font-semibold text-black mb-3">Chat</h2>
-            <div class="flex flex-col bg-white border border-gray-200 rounded-lg flex-grow">
-                <div id="chat-history" class="p-4 space-y-4 flex-grow overflow-y-auto h-96">
+            <div class="flex flex-col bg-white border border-gray-200 rounded-lg">
+                <div id="chat-history" class="p-4 space-y-4 overflow-y-auto h-96">
                     <!-- Chat messages will be appended here -->
                 </div>
                 <div class="border-t p-4">
