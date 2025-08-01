@@ -16,6 +16,22 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 </head>
 <body class="font-sans flex flex-col h-screen">
+    <div id="login-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 class="text-2xl font-bold mb-4">Login</h2>
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <button id="login-btn" class="w-full py-2 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Login</button>
+            <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Invalid username or password.</p>
+        </div>
+    </div>
+
     <header class="flex items-center justify-center py-4 border-b">
         <div class="container mx-auto max-w-7xl px-4 flex justify-between items-center">
             <div class="flex items-center">

@@ -3,6 +3,11 @@ import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed.");
 
+    const loginModal = document.getElementById('login-modal');
+    const loginBtn = document.getElementById('login-btn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('login-error');
     const loadArticleBtn = document.getElementById('load-article-btn');
     const articleUrlInput = document.getElementById('article-url');
     const apiKeyInput = document.getElementById('api-key-input');
@@ -16,6 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let genAI;
     let chatSession;
     let articleText = '';
+
+    // Initially disable the main content
+    contentWrapper.classList.add('hidden');
+    document.getElementById('url-section').classList.add('hidden');
+
+
+    loginBtn.addEventListener('click', () => {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        if (username === 'admin' && password === 'admin') {
+            loginModal.classList.add('hidden');
+            document.getElementById('url-section').classList.remove('hidden');
+        } else {
+            loginError.classList.remove('hidden');
+        }
+    });
+
 
     apiKeyInput.addEventListener('change', () => {
         const apiKey = apiKeyInput.value;
