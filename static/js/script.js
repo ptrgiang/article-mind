@@ -90,13 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log("Generating summary...");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-            const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`;
+            const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article. Use markdown to highlight important keywords and phrases with bold formatting.:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`;
             const summaryResult = await model.generateContent(summaryPrompt);
             const summaryResponse = await summaryResult.response;
             const summaryText = summaryResponse.text();
             console.log("Summary generated.");
 
-            summaryContentDiv.innerHTML = `<p>${summaryText.replace(/\n/g, '<br>')}</p>`;
+            const converter = new showdown.Converter();
+            const summaryHtml = converter.makeHtml(summaryText);
+            summaryContentDiv.innerHTML = summaryHtml;
             contentWrapper.classList.remove('hidden');
 
             console.log("Starting chat session...");
@@ -132,16 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.value = '';
         appendMessage('assistant', '<div class="loader"></div>');
 
-        try {
-            const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;
-            const result = await chatSession.sendMessage(fullContext);
-            const response = await result.response;
-            const text = response.text();
-
-            const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
-            lastMessage.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-
-        } catch (error) {
+        try {            const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;            const result = await chatSession.sendMessage(fullContext);            const response = await result.response;            const text = response.text();            const converter = new showdown.Converter();            const html = converter.makeHtml(text);            const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');            lastMessage.innerHTML = html;        } catch (error) {
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = `<p class="text-red-500">An error occurred. Please try again.</p>`;
             console.error("Chat error:", error);
