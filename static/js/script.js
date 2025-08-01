@@ -88,26 +88,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Could not extract text from the article.");
             }
 
-            console.log("Generating summary and keywords...");
+            console.log("Generating summary...");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-            const prompts = [
-                `Please provide a concise, easy-to-understand summary of the following article:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`,
-                `Based on the article, identify the top 5-7 most important keywords or phrases. Return them as a comma-separated list.`
-            ];
-            const [summaryResult, keywordsResult] = await Promise.all(prompts.map(p => model.generateContent(p)));
+            const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`;
+            const summaryResult = await model.generateContent(summaryPrompt);
+            const summaryResponse = await summaryResult.response;
+            const summaryText = summaryResponse.text();
+            console.log("Summary generated.");
 
-            const summaryText = await summaryResult.response.text();
-            const keywordsText = await keywordsResult.response.text();
-            const keywords = keywordsText.split(',').map(k => k.trim()).filter(k => k);
-            console.log("Summary and keywords generated.");
-
-            let highlightedSummary = summaryText.replace(/\n/g, '<br>');
-            keywords.forEach(keyword => {
-                const regex = new RegExp(`\\b(${keyword})\\b`, 'gi');
-                highlightedSummary = highlightedSummary.replace(regex, '<strong>$1</strong>');
-            });
-
-            summaryContentDiv.innerHTML = `<p>${highlightedSummary}</p>`;
+            summaryContentDiv.innerHTML = `<p>${summaryText.replace(/\n/g, '<br>')}</p>`;
             contentWrapper.classList.remove('hidden');
 
             console.log("Starting chat session...");
@@ -165,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageWrapper.classList.add('message', `${role}-message`, 'mb-4', 'flex');
 
         const messageContent = document.createElement('div');
-        messageContent.classList.add('message-content', 'p-3', 'rounded-lg', 'w-2/3');
+        messageContent.classList.add('message-content', 'p-3', 'rounded-lg', 'max-w-2/3');
         messageContent.innerHTML = content;
 
         if (role === 'user') {
