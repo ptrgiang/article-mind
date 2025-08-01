@@ -27,7 +27,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('url-section').classList.add('hidden');
 
 
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', handleLogin);
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+    usernameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+
+    function handleLogin() {
         const username = usernameInput.value;
         const password = passwordInput.value;
 
@@ -36,9 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('url-section').classList.remove('hidden');
         } else {
             loginError.classList.remove('hidden');
+            // Add a shake animation for incorrect login
+            loginModal.querySelector('.bg-white').classList.add('animate-shake');
+            setTimeout(() => {
+                loginModal.querySelector('.bg-white').classList.remove('animate-shake');
+            }, 500);
         }
-    });
-
+    }
 
     apiKeyInput.addEventListener('change', () => {
         const apiKey = apiKeyInput.value;
