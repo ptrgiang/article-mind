@@ -96,15 +96,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingData = await checkResponse.json();
             const keyExists = existingData.length > 0;
 
-            // Use PUT to update an existing key, or POST to create a new one.
-            const method = keyExists ? 'PUT' : 'POST';
-
-            const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
-                method: method,
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ user_name: loggedInUser, api_key: newApiKey })
-            });
-            const result = await response.json();
+            let result;
+            if (keyExists) {
+                // Use PUT to update, sending data in URL params to avoid issues with redirects stripping the request body.
+                const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ user_name: loggedInUser, api_key: newApiKey })
+                });
+                result = await response.json();
+            } else {
+                // Use POST to create, sending data in the body.
+                const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ user_name: loggedInUser, api_key: newApiKey })
+                });
+                result = await response.json();
+            }
 
             if (result.status === 'Appended' || result.status === 'Updated') {
                 sessionStorage.setItem('gemini-api-key', newApiKey);
