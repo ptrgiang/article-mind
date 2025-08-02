@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingData = await checkResponse.json();
             const keyExists = existingData.length > 0;
 
+            // Use PUT to update an existing key, or POST to create a new one.
             const method = keyExists ? 'PUT' : 'POST';
 
             const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
