@@ -21,9 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const showSignup = document.getElementById('show-signup');
     const showLogin = document.getElementById('show-login');
 
+    const userInfoDiv = document.getElementById('user-info');
+    const userNameSpan = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
+
     const loadArticleBtn = document.getElementById('load-article-btn');
     const articleUrlInput = document.getElementById('article-url');
-    const apiKeyInput = document.getElementById('api-key-input');
     const loadingDiv = document.getElementById('loading');
     const contentWrapper = document.getElementById('content-wrapper');
     const summaryContentDiv = document.getElementById('summary-content');
@@ -44,14 +47,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showSignup.addEventListener('click', (e) => {
         e.preventDefault();
-        loginSection.classList.add('hidden');
-        signupSection.classList.remove('hidden');
+        loginSection.classList.remove('hidden');
+        signupSection.classList.add('hidden');
     });
 
     showLogin.addEventListener('click', (e) => {
         e.preventDefault();
         signupSection.classList.add('hidden');
         loginSection.classList.remove('hidden');
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        loggedInUser = '';
+        sessionStorage.removeItem('gemini-api-key');
+        
+        userInfoDiv.classList.add('hidden');
+        contentWrapper.classList.add('hidden');
+        document.getElementById('url-section').classList.add('hidden');
+        
+        loginModal.classList.remove('hidden');
+        loginSection.classList.remove('hidden');
+        signupSection.classList.add('hidden');
+
+        usernameInput.value = '';
+        passwordInput.value = '';
     });
 
     function showLoader(button, show) {
@@ -86,6 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (users.length > 0 && String(users[0][1]) === password) {
                 const user = users[0];
                 loggedInUser = user[0];
+                
+                userNameSpan.textContent = `Welcome, ${loggedInUser}`;
+                userInfoDiv.classList.remove('hidden');
+                
                 loginModal.classList.add('hidden');
                 document.getElementById('url-section').classList.remove('hidden');
                 await fetchAndSetApiKey(loggedInUser);
@@ -157,15 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const apiKeys = await response.json();
             if (apiKeys.length > 0) {
                 const apiKey = apiKeys[0][1];
-                apiKeyInput.value = apiKey;
                 sessionStorage.setItem('gemini-api-key', apiKey);
                 genAI = new GoogleGenerativeAI(apiKey);
             } else {
-                // Handle case where user has no API key - maybe prompt them to add one
                 console.log("No API key found for this user.");
+                alert("No Gemini API key is associated with this account. Please contact support.");
+                logoutBtn.click();
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error fetching API key:", error);
         }
     }
@@ -197,28 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
     signupPasswordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSignup(); });
     signupUsernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSignup(); });
 
-    apiKeyInput.addEventListener('change', () => {
-        const apiKey = apiKeyInput.value;
-        console.log("API Key entered.");
-        if (apiKey) {
-            sessionStorage.setItem('gemini-api-key', apiKey);
-            try {
-                genAI = new GoogleGenerativeAI(apiKey);
-                console.log("GoogleGenerativeAI initialized successfully.");
-            } catch (e) {
-                alert("Invalid API Key provided.");
-                console.error("Error initializing GoogleGenerativeAI:", e);
-            }
-        }
-    });
-
     loadArticleBtn.addEventListener('click', async () => {
         console.log("Load Article button clicked.");
         const articleUrl = articleUrlInput.value;
         const apiKey = sessionStorage.getItem('gemini-api-key');
 
         if (!apiKey) {
-            alert('Please enter your Gemini API Key.');
+            alert('Your API Key is missing. Please log in again.');
             console.error("API Key is missing.");
             return;
         }

@@ -75,13 +75,14 @@
                 <img src="static/article-mind-logo.jpeg" alt="Article Mind Logo" class="w-9 h-9 mr-3 rounded-full">
                 <h1 class="text-2xl font-bold text-black">Article Mind</h1>
             </div>
-            <div class="w-1/3">
-                <input type="password" id="api-key-input" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm" placeholder="Enter your Gemini API Key...">
+            <div id="user-info" class="hidden items-center">
+                <span id="user-name" class="text-sm font-medium text-gray-700 mr-4"></span>
+                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none">Logout</button>
             </div>
         </div>
     </header>
 
-    <div id="url-section" class="w-full max-w-3xl mx-auto px-4 pt-6">
+    <div id="url-section" class="w-full max-w-3xl mx-auto px-4 pt-6 hidden">
         <div class="relative flex items-center">
             <input type="text" id="article-url" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500" placeholder="Enter an article URL...">
             <button id="load-article-btn" class="absolute right-2 px-5 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Load</button>
