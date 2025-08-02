@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${API_BASE_URL}?sheet=user_info&user_name=${username}`);
             const users = await response.json();
 
-            if (users.length > 0 && users[0][1] === password) {
+            if (users.length > 0 && String(users[0][1]) === password) {
                 const user = users[0];
                 loggedInUser = user[0];
                 loginModal.classList.add('hidden');
