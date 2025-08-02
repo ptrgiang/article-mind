@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInfoDiv = document.getElementById('user-info');
     const userNameSpan = document.getElementById('user-name');
     const logoutBtn = document.getElementById('logout-btn');
+    const apiKeyDisplay = document.getElementById('api-key-display');
+    const maskedApiKeySpan = document.getElementById('masked-api-key');
+    const changeApiKeyBtn = document.getElementById('change-api-key-btn');
+
+    const apiKeyModal = document.getElementById('api-key-modal');
+    const newApiKeyInput = document.getElementById('new-api-key-input');
+    const saveApiKeyBtn = document.getElementById('save-api-key-btn');
 
     const loadArticleBtn = document.getElementById('load-article-btn');
     const articleUrlInput = document.getElementById('article-url');
@@ -47,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showSignup.addEventListener('click', (e) => {
         e.preventDefault();
-        loginSection.classList.remove('hidden');
-        signupSection.classList.add('hidden');
+        loginSection.classList.add('hidden');
+        signupSection.classList.remove('hidden');
     });
 
     showLogin.addEventListener('click', (e) => {
@@ -71,6 +78,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         usernameInput.value = '';
         passwordInput.value = '';
+    });
+
+    changeApiKeyBtn.addEventListener('click', () => {
+        apiKeyModal.classList.remove('hidden');
+    });
+
+    saveApiKeyBtn.addEventListener('click', async () => {
+        const newApiKey = newApiKeyInput.value;
+        if (!newApiKey) {
+            alert("Please enter an API key.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ user_name: loggedInUser, api_key: newApiKey })
+            });
+            const result = await response.json();
+            if (result.status === 'Appended' || result.status === 'Updated') {
+                sessionStorage.setItem('gemini-api-key', newApiKey);
+                genAI = new GoogleGenerativeAI(newApiKey);
+                maskedApiKeySpan.textContent = `${newApiKey.substring(0, 3)}...${newApiKey.substring(newApiKey.length - 3)}`;
+                apiKeyModal.classList.add('hidden');
+                newApiKeyInput.value = '';
+            } else {
+                alert("Failed to save API key.");
+            }
+        } catch (error) {
+            alert("An error occurred while saving the API key.");
+            console.error("API key save error:", error);
+        }
     });
 
     function showLoader(button, show) {
@@ -178,14 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}?sheet=api_key&user_name=${username}`);
             const apiKeys = await response.json();
-            if (apiKeys.length > 0) {
+            if (apiKeys.length > 0 && apiKeys[0][1]) {
                 const apiKey = apiKeys[0][1];
                 sessionStorage.setItem('gemini-api-key', apiKey);
                 genAI = new GoogleGenerativeAI(apiKey);
+                maskedApiKeySpan.textContent = `${apiKey.substring(0, 3)}...${apiKey.substring(apiKey.length - 3)}`;
+                apiKeyDisplay.classList.remove('hidden');
             } else {
-                console.log("No API key found for this user.");
-                alert("No Gemini API key is associated with this account. Please contact support.");
-                logoutBtn.click();
+                apiKeyDisplay.classList.add('hidden');
+                apiKeyModal.classList.remove('hidden');
             }
         } catch (error) {
             console.error("Error fetching API key:", error);

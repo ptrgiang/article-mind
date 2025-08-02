@@ -77,10 +77,23 @@
             </div>
             <div id="user-info" class="hidden items-center">
                 <span id="user-name" class="text-sm font-medium text-gray-700 mr-4"></span>
-                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none">Logout</button>
+                <div id="api-key-display" class="text-sm text-gray-500 mr-4">
+                    API Key: <span id="masked-api-key" class="font-mono"></span>
+                </div>
+                <button id="change-api-key-btn" class="px-4 py-2 bg-gray-200 text-black font-semibold rounded-lg hover:bg-gray-300 focus:outline-none">Change</button>
+                <button id="logout-btn" class="ml-4 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none">Logout</button>
             </div>
         </div>
     </header>
+
+    <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm hidden">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Enter Your Gemini API Key</h2>
+            <p class="text-gray-600 mb-6">You need to provide a valid API key to use the application.</p>
+            <input type="password" id="new-api-key-input" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm" placeholder="Enter your Gemini API Key...">
+            <button id="save-api-key-btn" class="w-full mt-4 py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Save Key</button>
+        </div>
+    </div>
 
     <div id="url-section" class="w-full max-w-3xl mx-auto px-4 pt-6 hidden">
         <div class="relative flex items-center">
