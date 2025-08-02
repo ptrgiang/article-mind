@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupBtn = document.getElementById('signup-btn');
     const signupUsernameInput = document.getElementById('signup-username');
     const signupPasswordInput = document.getElementById('signup-password');
-    const signupError = document.getElementById('signup-error');
+    const signupStatus = document.getElementById('signup-status');
 
     const showSignup = document.getElementById('show-signup');
     const showLogin = document.getElementById('show-login');
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = signupPasswordInput.value;
 
         if (!username || !password) {
-            showError(signupError, "Username and password are required.");
+            showStatus(signupStatus, "Username and password are required.", true);
             return;
         }
 
@@ -98,28 +98,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const userExists = users.some(u => u[0] === username);
 
             if (userExists) {
-                showError(signupError, "Username already exists.");
+                showStatus(signupStatus, "Username already exists.", true);
                 return;
             }
 
             // Create new user
-            const signupResponse = await fetch(API_BASE_URL, {
+            const signupResponse = await fetch(`${API_BASE_URL}?sheet=user_info`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ sheet: 'user_info', user_name: username, password: password })
+                body: JSON.stringify({ user_name: username, password: password })
             });
             const result = await signupResponse.json();
 
             if (result.status === 'Appended') {
-                alert('Account created successfully! Please log in.');
+                showStatus(signupStatus, 'Account created successfully! Redirecting to login...', false);
                 signupUsernameInput.value = '';
                 signupPasswordInput.value = '';
-                showLogin.click();
+                setTimeout(() => {
+                    showLogin.click();
+                    signupStatus.classList.add('hidden');
+                }, 2000);
             } else {
-                showError(signupError, "Failed to create account.");
+                showStatus(signupStatus, "Failed to create account.", true);
             }
         } catch (error) {
-            showError(signupError, "An error occurred during signup.");
+            showStatus(signupStatus, "An error occurred during signup.", true);
             console.error("Signup error:", error);
         }
     }
@@ -137,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Handle case where user has no API key - maybe prompt them to add one
                 console.log("No API key found for this user.");
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Error fetching API key:", error);
         }
     }
@@ -147,6 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
         element.classList.remove('hidden');
         setTimeout(() => {
             element.classList.add('hidden');
+        }, 3000);
+    }
+
+    function showStatus(element, message, isError) {
+        element.textContent = message;
+        element.className = `text-sm mt-4 text-center ${isError ? 'text-red-500' : 'text-green-500'}`;
+        element.classList.remove('hidden');
+        setTimeout(() => {
+            if (isError) {
+                element.classList.add('hidden');
+            }
         }, 3000);
     }
 
@@ -304,3 +319,4 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
     }
 });
+console.log("script.js loaded.");
