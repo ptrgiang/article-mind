@@ -30,7 +30,10 @@
                 <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
                 <input type="password" id="password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
             </div>
-            <button id="login-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105">Login</button>
+            <button id="login-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105 relative">
+                <span class="button-text">Login</span>
+                <div class="button-loader hidden"></div>
+            </button>
             <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden">Invalid username or password.</p>
             <p class="text-sm text-center mt-4">
                 Don't have an account? 
@@ -46,11 +49,18 @@
                 <label for="signup-username" class="block text-sm font-medium text-gray-600 mb-1">Username</label>
                 <input type="text" id="signup-username" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
             </div>
-            <div class="mb-6">
+            <div class="mb-4">
                 <label for="signup-password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
                 <input type="password" id="signup-password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
             </div>
-            <button id="signup-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105">Create Account</button>
+            <div class="mb-6">
+                <label for="signup-confirm-password" class="block text-sm font-medium text-gray-600 mb-1">Confirm Password</label>
+                <input type="password" id="signup-confirm-password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
+            </div>
+            <button id="signup-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105 relative">
+                <span class="button-text">Create Account</span>
+                <div class="button-loader hidden"></div>
+            </button>
             <p id="signup-status" class="text-sm mt-4 text-center hidden"></p>
             <p class="text-sm text-center mt-4">
                 Already have an account? 

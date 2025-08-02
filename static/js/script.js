@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupBtn = document.getElementById('signup-btn');
     const signupUsernameInput = document.getElementById('signup-username');
     const signupPasswordInput = document.getElementById('signup-password');
+    const signupConfirmPasswordInput = document.getElementById('signup-confirm-password');
     const signupStatus = document.getElementById('signup-status');
 
     const showSignup = document.getElementById('show-signup');
@@ -53,6 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
         loginSection.classList.remove('hidden');
     });
 
+    function showLoader(button, show) {
+        const text = button.querySelector('.button-text');
+        const loader = button.querySelector('.button-loader');
+        if (show) {
+            text.classList.add('hidden');
+            loader.classList.remove('hidden');
+            button.disabled = true;
+        } else {
+            text.classList.remove('hidden');
+            loader.classList.add('hidden');
+            button.disabled = false;
+        }
+    }
+
     async function handleLogin() {
         const username = usernameInput.value;
         const password = passwordInput.value;
@@ -62,16 +77,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}?sheet=user_info`);
-            const users = await response.json();
-            const user = users.find(u => u[0] === username && u[1] === password);
+        showLoader(loginBtn, true);
 
-            if (user) {
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=user_info&user_name=${username}`);
+            const users = await response.json();
+
+            if (users.length > 0 && users[0][1] === password) {
+                const user = users[0];
                 loggedInUser = user[0];
                 loginModal.classList.add('hidden');
                 document.getElementById('url-section').classList.remove('hidden');
-                // Fetch and set API key for the logged-in user
                 await fetchAndSetApiKey(loggedInUser);
             } else {
                 showError(loginError, "Invalid username or password.");
@@ -79,21 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             showError(loginError, "An error occurred during login.");
             console.error("Login error:", error);
+        } finally {
+            showLoader(loginBtn, false);
         }
     }
 
     async function handleSignup() {
         const username = signupUsernameInput.value;
         const password = signupPasswordInput.value;
+        const confirmPassword = signupConfirmPasswordInput.value;
 
-        if (!username || !password) {
-            showStatus(signupStatus, "Username and password are required.", true);
+        if (!username || !password || !confirmPassword) {
+            showStatus(signupStatus, "All fields are required.", true);
             return;
         }
 
+        if (password !== confirmPassword) {
+            showStatus(signupStatus, "Passwords do not match.", true);
+            return;
+        }
+
+        showLoader(signupBtn, true);
+
         try {
-            // Check if username already exists
-            const response = await fetch(`${API_BASE_URL}?sheet=user_info`);
+            const response = await fetch(`${API_BASE_URL}?sheet=user_info&user_name=${username}`);
             const users = await response.json();
             const userExists = users.some(u => u[0] === username);
 
@@ -102,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Create new user
             const signupResponse = await fetch(`${API_BASE_URL}?sheet=user_info`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -112,8 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (result.status === 'Appended') {
                 showStatus(signupStatus, 'Account created successfully! Redirecting to login...', false);
-                signupUsernameInput.value = '';
-                signupPasswordInput.value = '';
                 setTimeout(() => {
                     showLogin.click();
                     signupStatus.classList.add('hidden');
@@ -124,6 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             showStatus(signupStatus, "An error occurred during signup.", true);
             console.error("Signup error:", error);
+        } finally {
+            showLoader(signupBtn, false);
         }
     }
     
