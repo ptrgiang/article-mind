@@ -92,20 +92,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            const checkResponse = await fetch(`${API_BASE_URL}?sheet=api_key&user_name=${loggedInUser}`);
+            const existingData = await checkResponse.json();
+            const keyExists = existingData.length > 0;
+
+            const method = keyExists ? 'PUT' : 'POST';
+
             const response = await fetch(`${API_BASE_URL}?sheet=api_key`, {
-                method: 'POST',
+                method: method,
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ user_name: loggedInUser, api_key: newApiKey })
             });
             const result = await response.json();
+
             if (result.status === 'Appended' || result.status === 'Updated') {
                 sessionStorage.setItem('gemini-api-key', newApiKey);
                 genAI = new GoogleGenerativeAI(newApiKey);
                 maskedApiKeySpan.textContent = `${newApiKey.substring(0, 3)}...${newApiKey.substring(newApiKey.length - 3)}`;
+                apiKeyDisplay.classList.remove('hidden');
                 apiKeyModal.classList.add('hidden');
                 newApiKeyInput.value = '';
             } else {
-                alert("Failed to save API key.");
+                alert(`Failed to save API key. ${result.error || ''}`);
             }
         } catch (error) {
             alert("An error occurred while saving the API key.");
