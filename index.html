@@ -32,6 +32,30 @@
             </div>
             <button id="login-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105">Login</button>
             <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden">Invalid username or password.</p>
+            <p class="text-sm text-center mt-4">
+                Don't have an account? 
+                <a href="#" id="show-signup" class="font-medium text-black hover:underline">Sign up</a>
+            </p>
+        </div>
+        <div id="signup-section" class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all hidden">
+            <div class="flex items-center justify-center mb-6">
+                <img src="static/article-mind-logo.jpeg" alt="Article Mind Logo" class="w-12 h-12 mr-4 rounded-full">
+                <h2 class="text-3xl font-bold text-gray-800">Create Account</h2>
+            </div>
+            <div class="mb-4">
+                <label for="signup-username" class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                <input type="text" id="signup-username" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
+            </div>
+            <div class="mb-6">
+                <label for="signup-password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                <input type="password" id="signup-password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm">
+            </div>
+            <button id="signup-btn" class="w-full py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-transform transform hover:scale-105">Create Account</button>
+            <p id="signup-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+            <p class="text-sm text-center mt-4">
+                Already have an account? 
+                <a href="#" id="show-login" class="font-medium text-black hover:underline">Log in</a>
+            </p>
         </div>
     </div>
 

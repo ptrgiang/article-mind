@@ -4,10 +4,22 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed.");
 
     const loginModal = document.getElementById('login-modal');
+    const loginSection = loginModal.querySelector('.bg-white');
+    const signupSection = document.getElementById('signup-section');
+    
     const loginBtn = document.getElementById('login-btn');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const loginError = document.getElementById('login-error');
+
+    const signupBtn = document.getElementById('signup-btn');
+    const signupUsernameInput = document.getElementById('signup-username');
+    const signupPasswordInput = document.getElementById('signup-password');
+    const signupError = document.getElementById('signup-error');
+
+    const showSignup = document.getElementById('show-signup');
+    const showLogin = document.getElementById('show-login');
+
     const loadArticleBtn = document.getElementById('load-article-btn');
     const articleUrlInput = document.getElementById('article-url');
     const apiKeyInput = document.getElementById('api-key-input');
@@ -18,43 +30,133 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
     const sendChatBtn = document.getElementById('send-chat-btn');
 
+    const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbw66FPwATVM2O9mLKwx9q5UMx_yUcCe9WmI3WlPnnrqqbNYiiyg2goljM6tDycoaNLRqw/exec';
+
     let genAI;
     let chatSession;
     let articleText = '';
+    let loggedInUser = '';
 
     // Initially disable the main content
     contentWrapper.classList.add('hidden');
     document.getElementById('url-section').classList.add('hidden');
 
-
-    loginBtn.addEventListener('click', handleLogin);
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-    usernameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
+    showSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginSection.classList.add('hidden');
+        signupSection.classList.remove('hidden');
     });
 
-    function handleLogin() {
+    showLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        signupSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+    });
+
+    async function handleLogin() {
         const username = usernameInput.value;
         const password = passwordInput.value;
 
-        if (username === 'admin' && password === 'admin') {
-            loginModal.classList.add('hidden');
-            document.getElementById('url-section').classList.remove('hidden');
-        } else {
-            loginError.classList.remove('hidden');
-            // Add a shake animation for incorrect login
-            loginModal.querySelector('.bg-white').classList.add('animate-shake');
-            setTimeout(() => {
-                loginModal.querySelector('.bg-white').classList.remove('animate-shake');
-            }, 500);
+        if (!username || !password) {
+            showError(loginError, "Username and password are required.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=user_info`);
+            const users = await response.json();
+            const user = users.find(u => u[0] === username && u[1] === password);
+
+            if (user) {
+                loggedInUser = user[0];
+                loginModal.classList.add('hidden');
+                document.getElementById('url-section').classList.remove('hidden');
+                // Fetch and set API key for the logged-in user
+                await fetchAndSetApiKey(loggedInUser);
+            } else {
+                showError(loginError, "Invalid username or password.");
+            }
+        } catch (error) {
+            showError(loginError, "An error occurred during login.");
+            console.error("Login error:", error);
         }
     }
+
+    async function handleSignup() {
+        const username = signupUsernameInput.value;
+        const password = signupPasswordInput.value;
+
+        if (!username || !password) {
+            showError(signupError, "Username and password are required.");
+            return;
+        }
+
+        try {
+            // Check if username already exists
+            const response = await fetch(`${API_BASE_URL}?sheet=user_info`);
+            const users = await response.json();
+            const userExists = users.some(u => u[0] === username);
+
+            if (userExists) {
+                showError(signupError, "Username already exists.");
+                return;
+            }
+
+            // Create new user
+            const signupResponse = await fetch(API_BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ sheet: 'user_info', user_name: username, password: password })
+            });
+            const result = await signupResponse.json();
+
+            if (result.status === 'Appended') {
+                alert('Account created successfully! Please log in.');
+                signupUsernameInput.value = '';
+                signupPasswordInput.value = '';
+                showLogin.click();
+            } else {
+                showError(signupError, "Failed to create account.");
+            }
+        } catch (error) {
+            showError(signupError, "An error occurred during signup.");
+            console.error("Signup error:", error);
+        }
+    }
+    
+    async function fetchAndSetApiKey(username) {
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=api_key&user_name=${username}`);
+            const apiKeys = await response.json();
+            if (apiKeys.length > 0) {
+                const apiKey = apiKeys[0][1];
+                apiKeyInput.value = apiKey;
+                sessionStorage.setItem('gemini-api-key', apiKey);
+                genAI = new GoogleGenerativeAI(apiKey);
+            } else {
+                // Handle case where user has no API key - maybe prompt them to add one
+                console.log("No API key found for this user.");
+            }
+        } catch (error) {
+            console.error("Error fetching API key:", error);
+        }
+    }
+
+    function showError(element, message) {
+        element.textContent = message;
+        element.classList.remove('hidden');
+        setTimeout(() => {
+            element.classList.add('hidden');
+        }, 3000);
+    }
+
+    loginBtn.addEventListener('click', handleLogin);
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+    usernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+
+    signupBtn.addEventListener('click', handleSignup);
+    signupPasswordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSignup(); });
+    signupUsernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSignup(); });
 
     apiKeyInput.addEventListener('change', () => {
         const apiKey = apiKeyInput.value;
