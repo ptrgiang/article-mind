@@ -528,7 +528,7 @@ ${articleText}
 
                 chatSession = model.startChat({
                     history: historyForAI.map(m => ({
-                        role: m.role,
+                        role: m.role === 'assistant' ? 'model' : m.role,
                         parts: [{ text: m.content }]
                     }))
                 });
