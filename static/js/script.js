@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatHistoryDiv = document.getElementById('chat-history');
     const chatInput = document.getElementById('chat-input');
     const sendChatBtn = document.getElementById('send-chat-btn');
-    const saveChatBtn = document.getElementById('save-chat-btn');
 
     const chatHistoryPanel = document.getElementById('chat-history-panel');
     const chatHistoryList = document.getElementById('chat-history-list');
@@ -51,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let chatSession;
     let articleText = '';
     let loggedInUser = '';
+    let currentChatId = null;
+    let currentChatTitle = '';
 
     // Initially disable the main content
     contentWrapper.classList.add('hidden');
@@ -292,6 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
         contentWrapper.classList.add('hidden');
         loadArticleBtn.disabled = true;
         articleUrlInput.disabled = true;
+        chatHistoryDiv.innerHTML = '';
+        currentChatId = null;
+        currentChatTitle = '';
 
         try {
             console.log("Fetching HTML from Google Apps Script...");
@@ -325,13 +329,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Could not extract text from the article.");
             }
 
-            console.log("Generating summary...");
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+            console.log("Generating summary and title...");
             const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article. Use markdown to highlight important keywords and phrases with bold formatting.:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`;
-            const summaryResult = await model.generateContent(summaryPrompt);
-            const summaryResponse = await summaryResult.response;
-            const summaryText = summaryResponse.text();
-            console.log("Summary generated.");
+            const titlePrompt = `Based on the following article text, please generate a short, concise title for a chat session about it. The title should be no more than 5 words.`;
+            
+            const [summaryResult, titleResult] = await Promise.all([
+                model.generateContent(summaryPrompt),
+                model.generateContent(titlePrompt)
+            ]);
+
+            const summaryText = await summaryResult.response.text();
+            currentChatTitle = await titleResult.response.text();
+            console.log("Summary and title generated.");
 
             const converter = new showdown.Converter();
             const summaryHtml = converter.makeHtml(summaryText);
@@ -342,6 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
             chatSession = model.startChat({ history: [] });
             appendMessage('assistant', 'The summary is ready. You can now ask me anything about the article.');
             console.log("Chat session started.");
+
+            currentChatId = Date.now().toString();
+            saveOrUpdateChat();
 
         } catch (error) {
             alert(`An error occurred: ${error.message}`);
@@ -370,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage('user', prompt);
         chatInput.value = '';
         appendMessage('assistant', '<div class="loader"></div>');
+        saveOrUpdateChat();
 
         try {
             const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;
@@ -380,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const html = converter.makeHtml(text);
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = html;
+            saveOrUpdateChat();
         } catch (error) {
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = `<p class="text-red-500">An error occurred. Please try again.</p>`;
@@ -419,7 +435,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const chatHistoryItem = document.createElement('div');
                 chatHistoryItem.classList.add('p-2', 'hover:bg-gray-200', 'cursor-pointer', 'rounded');
                 chatHistoryItem.textContent = chatInfo.chat_title;
-                chatHistoryItem.addEventListener('click', () => loadChat(chatInfo));
+                chatHistoryItem.dataset.chatId = chat[0];
+                chatHistoryItem.addEventListener('click', () => loadChat(chat[0]));
                 chatHistoryList.appendChild(chatHistoryItem);
             });
         } catch (error) {
@@ -427,33 +444,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadChat(chatInfo) {
-        articleUrlInput.value = chatInfo.article_url;
-        articleText = chatInfo.article_text;
+    async function loadChat(chatId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=chat_history&chat_id=${chatId}`);
+            const chats = await response.json();
+            if (chats.length > 0) {
+                const chatInfo = JSON.parse(chats[0][1]);
+                
+                currentChatId = chatId;
+                currentChatTitle = chatInfo.chat_title;
+                articleUrlInput.value = chatInfo.article_url;
+                articleText = chatInfo.article_text;
 
-        const converter = new showdown.Converter();
-        const summaryHtml = converter.makeHtml(`This is a summary of the article at ${chatInfo.article_url}`);
-        summaryContentDiv.innerHTML = summaryHtml;
+                const converter = new showdown.Converter();
+                const summaryHtml = converter.makeHtml(`This is a summary of the article at ${chatInfo.article_url}`);
+                summaryContentDiv.innerHTML = summaryHtml;
 
-        chatHistoryDiv.innerHTML = '';
-        chatInfo.chat_history.forEach(message => {
-            appendMessage(message.role, message.content);
-        });
+                chatHistoryDiv.innerHTML = '';
+                chatInfo.chat_history.forEach(message => {
+                    appendMessage(message.role, message.content);
+                });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-        chatSession = model.startChat({
-            history: chatInfo.chat_history.map(m => ({
-                role: m.role,
-                parts: [{ text: m.content }]
-            }))
-        });
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+                chatSession = model.startChat({
+                    history: chatInfo.chat_history.map(m => ({
+                        role: m.role,
+                        parts: [{ text: m.content }]
+                    }))
+                });
 
-        contentWrapper.classList.remove('hidden');
+                contentWrapper.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error("Error loading chat:", error);
+        }
     }
 
-    saveChatBtn.addEventListener('click', async () => {
-        const chatTitle = prompt("Enter a title for this chat:");
-        if (!chatTitle) return;
+    async function saveOrUpdateChat() {
+        if (!currentChatId) return;
 
         const messages = Array.from(chatHistoryDiv.querySelectorAll('.message')).map(msg => {
             const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
@@ -462,30 +490,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const chatInfo = {
+            chat_id: currentChatId,
             user_name: loggedInUser,
-            chat_title: chatTitle,
+            chat_title: currentChatTitle,
             article_url: articleUrlInput.value,
             article_text: articleText,
             chat_history: messages
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}?sheet=chat_history`, {
+            await fetch(`${API_BASE_URL}?sheet=chat_history`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(chatInfo)
             });
-            const result = await response.json();
-            if (result.status === 'Appended') {
-                alert("Chat saved successfully!");
-                loadChatHistory();
-            } else {
-                alert(`Failed to save chat. ${result.error || ''}`);
-            }
+            console.log(`Chat ${currentChatId} saved.`);
+            loadChatHistory();
         } catch (error) {
-            alert("An error occurred while saving the chat.");
             console.error("Chat save error:", error);
         }
-    });
+    }
 });
 console.log("script.js loaded.");
