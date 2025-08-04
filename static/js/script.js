@@ -397,7 +397,7 @@ ${articleText}
         appendMessage('user', prompt);
         chatInput.value = '';
         appendMessage('assistant', '<div class="loader"></div>');
-        saveOrUpdateChat();
+        await saveOrUpdateChat();
 
         try {
             const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;
@@ -408,7 +408,7 @@ ${articleText}
             const html = converter.makeHtml(text);
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = html;
-            saveOrUpdateChat();
+            await saveOrUpdateChat();
         } catch (error) {
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = `<p class="text-red-500">An error occurred. Please try again.</p>`;
@@ -534,9 +534,12 @@ ${articleText}
                 });
 
                 contentWrapper.classList.remove('hidden');
+            } else {
+                alert("Could not load the selected chat. It might have been deleted.");
             }
         } catch (error) {
             console.error("Error loading chat:", error);
+            alert("An error occurred while loading the chat.");
         }
     }
 
@@ -571,7 +574,7 @@ ${articleText}
                 body: JSON.stringify(dataToSend)
             });
             console.log(`Chat ${currentChatId} saved.`);
-            prependChatToHistoryList(currentChatId, currentChatTitle);
+            await loadChatHistory();
         } catch (error) {
             console.error("Chat save error:", error);
         }
