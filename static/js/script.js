@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ]);
 
             const summaryText = await summaryResult.response.text();
-            currentChatTitle = await titleResult.response.text();
+            currentChatTitle = (await titleResult.response.text()).replace(/"/g, "");
             console.log("Summary and title generated.");
 
             const converter = new showdown.Converter();
@@ -355,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Chat session started.");
 
             currentChatId = Date.now().toString();
+            prependChatToHistoryList(currentChatId, currentChatTitle);
             saveOrUpdateChat();
 
         } catch (error) {
@@ -425,18 +426,58 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
     }
 
+    function prependChatToHistoryList(chatId, chatTitle) {
+        const existingItem = chatHistoryList.querySelector(`[data-chat-id="${chatId}"]`);
+        if (existingItem) {
+            chatHistoryList.removeChild(existingItem);
+        }
+
+        const chatHistoryItem = document.createElement('div');
+        chatHistoryItem.classList.add('p-2', 'hover:bg-gray-200', 'cursor-pointer', 'rounded');
+        chatHistoryItem.textContent = chatTitle;
+        chatHistoryItem.dataset.chatId = chatId;
+        chatHistoryItem.addEventListener('click', () => loadChat(chatId));
+        chatHistoryList.prepend(chatHistoryItem);
+    }
+
     async function loadChatHistory() {
         chatHistoryList.innerHTML = '';
         try {
             const response = await fetch(`${API_BASE_URL}?sheet=chat_history&user_name=${loggedInUser}`);
-            const chats = await response.json();
-            chats.forEach(chat => {
-                const chatInfo = JSON.parse(chat[1]);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const text = await response.text();
+            if (!text) {
+                console.log("Chat history is empty.");
+                return;
+            }
+            const chats = JSON.parse(text);
+
+            const parsedChats = chats.map(chat => {
+                try {
+                    // chat[0] = chat_id, chat[1] = chat_info, chat[2] = user_name, chat[3] = last_update
+                    const chatInfo = JSON.parse(chat[1]);
+                    return {
+                        chat_id: chat[0],
+                        user_name: chat[2],
+                        last_update: chat[3],
+                        ...chatInfo
+                    };
+                } catch (e) {
+                    console.error("Error parsing chat_info:", chat[1], e);
+                    return null;
+                }
+            }).filter(c => c !== null);
+
+            parsedChats.sort((a, b) => new Date(b.last_update) - new Date(a.last_update));
+
+            parsedChats.forEach(chat => {
                 const chatHistoryItem = document.createElement('div');
                 chatHistoryItem.classList.add('p-2', 'hover:bg-gray-200', 'cursor-pointer', 'rounded');
-                chatHistoryItem.textContent = chatInfo.chat_title;
-                chatHistoryItem.dataset.chatId = chat[0];
-                chatHistoryItem.addEventListener('click', () => loadChat(chat[0]));
+                chatHistoryItem.textContent = chat.chat_title;
+                chatHistoryItem.dataset.chatId = chat.chat_id;
+                chatHistoryItem.addEventListener('click', () => loadChat(chat.chat_id));
                 chatHistoryList.appendChild(chatHistoryItem);
             });
         } catch (error) {
@@ -457,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 articleText = chatInfo.article_text;
 
                 const converter = new showdown.Converter();
-                const summaryHtml = converter.makeHtml(`This is a summary of the article at ${chatInfo.article_url}`);
+                const summaryHtml = converter.makeHtml(chatInfo.summary || `This is a summary of the article at ${chatInfo.article_url}`);
                 summaryContentDiv.innerHTML = summaryHtml;
 
                 chatHistoryDiv.innerHTML = '';
@@ -489,23 +530,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return { role, content };
         });
 
-        const chatInfo = {
-            chat_id: currentChatId,
-            user_name: loggedInUser,
+        const chatInfoPayload = {
             chat_title: currentChatTitle,
             article_url: articleUrlInput.value,
             article_text: articleText,
-            chat_history: messages
+            chat_history: messages,
+            summary: summaryContentDiv.innerHTML
+        };
+
+        const dataToSend = {
+            chat_id: currentChatId,
+            user_name: loggedInUser,
+            last_update: new Date().toISOString(),
+            chat_info: JSON.stringify(chatInfoPayload)
         };
 
         try {
             await fetch(`${API_BASE_URL}?sheet=chat_history`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(chatInfo)
+                body: JSON.stringify(dataToSend)
             });
             console.log(`Chat ${currentChatId} saved.`);
-            loadChatHistory();
+            prependChatToHistoryList(currentChatId, currentChatTitle);
         } catch (error) {
             console.error("Chat save error:", error);
         }
