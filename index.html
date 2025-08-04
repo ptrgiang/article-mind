@@ -86,49 +86,64 @@
         </div>
     </header>
 
-    <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm hidden">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Enter Your Gemini API Key</h2>
-            <p class="text-gray-600 mb-6">You need to provide a valid API key to use the application.</p>
-            <input type="password" id="new-api-key-input" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm" placeholder="Enter your Gemini API Key...">
-            <button id="save-api-key-btn" class="w-full mt-4 py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Save Key</button>
-        </div>
-    </div>
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Chat History Panel -->
+        <aside id="chat-history-panel" class="w-64 bg-gray-100 p-4 border-r overflow-y-auto hidden">
+            <h2 class="text-lg font-semibold text-black mb-4">Chat History</h2>
+            <div id="chat-history-list">
+                <!-- Chat history items will be appended here -->
+            </div>
+        </aside>
 
-    <div id="url-section" class="w-full max-w-3xl mx-auto px-4 pt-6 hidden">
-        <div class="relative flex items-center">
-            <input type="text" id="article-url" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500" placeholder="Enter an article URL...">
-            <button id="load-article-btn" class="absolute right-2 px-5 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Load</button>
-        </div>
-    </div>
-
-    <div id="loading" class="hidden text-center py-10 flex-grow">
-        <div class="loader"></div>
-        <p class="text-gray-500 mt-4">Reading, summarizing, and preparing chat...</p>
-    </div>
-
-    <div id="content-wrapper" class="hidden flex flex-col items-center container mx-auto max-w-7xl px-4 py-6 flex-grow">
-        <!-- Summary Section -->
-        <div id="summary-section-wrapper" class="w-full mb-8">
-            <h2 class="text-xl font-semibold text-black mb-3">Summary</h2>
-            <div id="summary-content" class="bg-white border border-gray-200 p-6 rounded-lg text-gray-800 overflow-y-auto max-h-64"></div>
-        </div>
-
-        <!-- Chat Section -->
-        <div id="chat-section-wrapper" class="w-full flex flex-col flex-grow">
-            <h2 class="text-xl font-semibold text-black mb-3">Chat</h2>
-            <div class="flex flex-col bg-white border border-gray-200 rounded-lg flex-grow h-0">
-                <div id="chat-history" class="p-4 space-y-4 overflow-y-auto flex-grow">
-                    <!-- Chat messages will be appended here -->
+        <main id="main-content" class="flex-1 flex flex-col overflow-y-auto">
+            <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm hidden">
+                <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Enter Your Gemini API Key</h2>
+                    <p class="text-gray-600 mb-6">You need to provide a valid API key to use the application.</p>
+                    <input type="password" id="new-api-key-input" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black sm:text-sm" placeholder="Enter your Gemini API Key...">
+                    <button id="save-api-key-btn" class="w-full mt-4 py-3 px-4 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Save Key</button>
                 </div>
-                <div class="border-t p-4">
-                    <div class="relative flex items-center">
-                        <input type="text" id="chat-input" class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500" placeholder="Ask a question...">
-                        <button id="send-chat-btn" class="absolute right-2 px-5 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Send</button>
+            </div>
+
+            <div id="url-section" class="w-full max-w-3xl mx-auto px-4 pt-6 hidden">
+                <div class="relative flex items-center">
+                    <input type="text" id="article-url" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500" placeholder="Enter an article URL...">
+                    <button id="load-article-btn" class="absolute right-2 px-5 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Load</button>
+                </div>
+            </div>
+
+            <div id="loading" class="hidden text-center py-10 flex-grow">
+                <div class="loader"></div>
+                <p class="text-gray-500 mt-4">Reading, summarizing, and preparing chat...</p>
+            </div>
+
+            <div id="content-wrapper" class="hidden flex flex-col items-center container mx-auto max-w-7xl px-4 py-6 flex-grow">
+                <!-- Summary Section -->
+                <div id="summary-section-wrapper" class="w-full mb-8">
+                    <h2 class="text-xl font-semibold text-black mb-3">Summary</h2>
+                    <div id="summary-content" class="bg-white border border-gray-200 p-6 rounded-lg text-gray-800 overflow-y-auto max-h-64"></div>
+                </div>
+
+                <!-- Chat Section -->
+                <div id="chat-section-wrapper" class="w-full flex flex-col flex-grow">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-semibold text-black">Chat</h2>
+                        <button id="save-chat-btn" class="px-4 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Save Chat</button>
+                    </div>
+                    <div class="flex flex-col bg-white border border-gray-200 rounded-lg flex-grow h-0">
+                        <div id="chat-history" class="p-4 space-y-4 overflow-y-auto flex-grow">
+                            <!-- Chat messages will be appended here -->
+                        </div>
+                        <div class="border-t p-4">
+                            <div class="relative flex items-center">
+                                <input type="text" id="chat-input" class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500" placeholder="Ask a question...">
+                                <button id="send-chat-btn" class="absolute right-2 px-5 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none">Send</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script type="module" src="/static/js/script.js"></script>

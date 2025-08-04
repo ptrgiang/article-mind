@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatHistoryDiv = document.getElementById('chat-history');
     const chatInput = document.getElementById('chat-input');
     const sendChatBtn = document.getElementById('send-chat-btn');
+    const saveChatBtn = document.getElementById('save-chat-btn');
+
+    const chatHistoryPanel = document.getElementById('chat-history-panel');
+    const chatHistoryList = document.getElementById('chat-history-list');
 
     const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbymCCGCIYyxg52ZLmFNXp4G1SLryvZw_jdQPXFkpE5wGLnOgJbFq2yYBdDpphPKxVp_Ig/exec';
 
@@ -71,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userInfoDiv.classList.add('hidden');
         contentWrapper.classList.add('hidden');
         document.getElementById('url-section').classList.add('hidden');
+        chatHistoryPanel.classList.add('hidden');
         
         loginModal.classList.remove('hidden');
         loginSection.classList.remove('hidden');
@@ -153,7 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 loginModal.classList.add('hidden');
                 document.getElementById('url-section').classList.remove('hidden');
+                chatHistoryPanel.classList.remove('hidden');
                 await fetchAndSetApiKey(loggedInUser);
+                await loadChatHistory();
             } else {
                 showError(loginError, "Invalid username or password.");
             }
@@ -364,7 +371,16 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.value = '';
         appendMessage('assistant', '<div class="loader"></div>');
 
-        try {            const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;            const result = await chatSession.sendMessage(fullContext);            const response = await result.response;            const text = response.text();            const converter = new showdown.Converter();            const html = converter.makeHtml(text);            const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');            lastMessage.innerHTML = html;        } catch (error) {
+        try {
+            const fullContext = `Based on this article:\n${articleText}\n\nAnswer this question:\n${prompt}`;
+            const result = await chatSession.sendMessage(fullContext);
+            const response = await result.response;
+            const text = response.text();
+            const converter = new showdown.Converter();
+            const html = converter.makeHtml(text);
+            const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
+            lastMessage.innerHTML = html;
+        } catch (error) {
             const lastMessage = chatHistoryDiv.querySelector('.assistant-message:last-child .message-content');
             lastMessage.innerHTML = `<p class="text-red-500">An error occurred. Please try again.</p>`;
             console.error("Chat error:", error);
@@ -392,5 +408,84 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistoryDiv.appendChild(messageWrapper);
         chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
     }
+
+    async function loadChatHistory() {
+        chatHistoryList.innerHTML = '';
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=chat_history&user_name=${loggedInUser}`);
+            const chats = await response.json();
+            chats.forEach(chat => {
+                const chatInfo = JSON.parse(chat[1]);
+                const chatHistoryItem = document.createElement('div');
+                chatHistoryItem.classList.add('p-2', 'hover:bg-gray-200', 'cursor-pointer', 'rounded');
+                chatHistoryItem.textContent = chatInfo.chat_title;
+                chatHistoryItem.addEventListener('click', () => loadChat(chatInfo));
+                chatHistoryList.appendChild(chatHistoryItem);
+            });
+        } catch (error) {
+            console.error("Error loading chat history:", error);
+        }
+    }
+
+    function loadChat(chatInfo) {
+        articleUrlInput.value = chatInfo.article_url;
+        articleText = chatInfo.article_text;
+
+        const converter = new showdown.Converter();
+        const summaryHtml = converter.makeHtml(`This is a summary of the article at ${chatInfo.article_url}`);
+        summaryContentDiv.innerHTML = summaryHtml;
+
+        chatHistoryDiv.innerHTML = '';
+        chatInfo.chat_history.forEach(message => {
+            appendMessage(message.role, message.content);
+        });
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+        chatSession = model.startChat({
+            history: chatInfo.chat_history.map(m => ({
+                role: m.role,
+                parts: [{ text: m.content }]
+            }))
+        });
+
+        contentWrapper.classList.remove('hidden');
+    }
+
+    saveChatBtn.addEventListener('click', async () => {
+        const chatTitle = prompt("Enter a title for this chat:");
+        if (!chatTitle) return;
+
+        const messages = Array.from(chatHistoryDiv.querySelectorAll('.message')).map(msg => {
+            const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+            const content = msg.querySelector('.message-content').innerHTML;
+            return { role, content };
+        });
+
+        const chatInfo = {
+            user_name: loggedInUser,
+            chat_title: chatTitle,
+            article_url: articleUrlInput.value,
+            article_text: articleText,
+            chat_history: messages
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}?sheet=chat_history`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(chatInfo)
+            });
+            const result = await response.json();
+            if (result.status === 'Appended') {
+                alert("Chat saved successfully!");
+                loadChatHistory();
+            } else {
+                alert(`Failed to save chat. ${result.error || ''}`);
+            }
+        } catch (error) {
+            alert("An error occurred while saving the chat.");
+            console.error("Chat save error:", error);
+        }
+    });
 });
 console.log("script.js loaded.");
