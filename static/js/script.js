@@ -332,8 +332,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
             console.log("Generating summary and title...");
-            const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article. Use markdown to highlight important keywords and phrases with bold formatting.:\n\n--- ARTICLE ---\n\n${articleText}\n\n--- END ARTICLE ---`;
-            const titlePrompt = `Based on the following article text, please generate a short, concise title for a chat session about it. The title should be no more than 5 words.`;
+            const summaryPrompt = `Please provide a concise, easy-to-understand summary of the following article. Use markdown to highlight important keywords and phrases with bold formatting.:
+
+--- ARTICLE ---
+
+${articleText}
+
+--- END ARTICLE ---`;
+            const titlePrompt = `Based on the following article text, please generate a short, concise title for a chat session about it. The title should be no more than 5 words.
+
+--- ARTICLE ---
+
+${articleText}
+
+--- END ARTICLE ---`;
             
             const [summaryResult, titleResult] = await Promise.all([
                 model.generateContent(summaryPrompt),
@@ -507,8 +519,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+                
+                // Filter history to start with a user role for the AI
+                let historyForAI = [...chatInfo.chat_history];
+                if (historyForAI.length > 0 && historyForAI[0].role === 'assistant') {
+                    historyForAI.shift(); 
+                }
+
                 chatSession = model.startChat({
-                    history: chatInfo.chat_history.map(m => ({
+                    history: historyForAI.map(m => ({
                         role: m.role,
                         parts: [{ text: m.content }]
                     }))
